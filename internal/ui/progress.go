@@ -42,7 +42,7 @@ var (
 
 	threadNumStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("243")).
-			Width(3)
+			Width(4)
 
 	activeURLStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("117"))
@@ -102,7 +102,7 @@ func NewModel(config *crawler.Config) *Model {
 	threads := make([]ThreadStatus, config.Threads)
 	for i := range threads {
 		s := spinner.New()
-		s.Spinner = spinner.Line
+		s.Spinner = spinner.Dot
 		s.Style = spinnerStyle
 
 		threads[i] = ThreadStatus{
