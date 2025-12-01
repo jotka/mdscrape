@@ -210,7 +210,7 @@ Then reference all three in your project instructions to create a full-stack exp
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
 ## Examples
 
