@@ -176,7 +176,9 @@ nav, header, footer, .sidebar, .toc, .breadcrumb,
 
 ## Building AI agents with scraped docs
 
-The scraped markdown files are ideal for creating specialized AI coding agents. For example, to build a "Next.js expert" agent:
+The scraped markdown files are ideal for creating specialized AI coding agents. This approach is often more effective than using MCP (Model Context Protocol) servers or real-time web fetching, which can waste context window space on navigation elements, ads, and irrelevant content with each request. Pre-scraped markdown files are clean, deduplicated, and always available - the AI can reference them instantly without network latency or token overhead from fetching raw HTML.
+
+For example, to build a "Next.js expert" agent:
 
 ```bash
 # Scrape Next.js documentation
