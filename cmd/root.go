@@ -28,23 +28,27 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "mdscrape",
+	Use:   "mdscrape <url>",
 	Short: "Scrape websites and convert to Markdown files",
 	Long: `mdscrape is a CLI tool for scraping documentation websites and converting
 them to Markdown files suitable for AI agents like Claude.
 
 Examples:
   # Scrape Docker reference docs
-  mdscrape -u https://docs.docker.com/reference/ -l https://docs.docker.com/reference/
+  mdscrape https://docs.docker.com/reference/
 
   # Scrape with custom output directory and fewer threads
-  mdscrape -u https://docs.docker.com/reference/ -l https://docs.docker.com/reference/ -o ./docker-docs -t 5
+  mdscrape https://docs.docker.com/reference/ -o ./docker-docs -t 5
+
+  # Limit scraping to a specific section
+  mdscrape https://docs.docker.com/ -l https://docs.docker.com/reference/
 
   # Dry run to see what would be scraped
-  mdscrape -u https://docs.docker.com/reference/ --dry-run
+  mdscrape https://docs.docker.com/reference/ --dry-run
 
   # Scrape with custom content selector
-  mdscrape -u https://docs.docker.com/reference/ -s "article.main-content"`,
+  mdscrape https://docs.docker.com/reference/ -s "article.main-content"`,
+	Args: cobra.MaximumNArgs(1),
 	RunE: runScrape,
 }
 
@@ -55,7 +59,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&startURL, "url", "u", "", "Starting URL to scrape (required)")
+	rootCmd.Flags().StringVarP(&startURL, "url", "u", "", "Starting URL to scrape (can also be passed as argument)")
 	rootCmd.Flags().StringVarP(&limitURL, "limit", "l", "", "Limit scraping to URLs matching this prefix (defaults to start URL)")
 	rootCmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output directory (defaults to URL-based path)")
 	rootCmd.Flags().IntVarP(&threads, "threads", "t", 10, "Number of concurrent threads")
@@ -67,18 +71,26 @@ func init() {
 	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what would be scraped without downloading")
 	rootCmd.Flags().StringVar(&userAgent, "user-agent", "mdscrape/1.0", "User agent string")
 	rootCmd.Flags().StringSliceVarP(&excludePatterns, "exclude", "e", []string{}, "URL patterns to exclude (can be specified multiple times)")
-
-	rootCmd.MarkFlagRequired("url")
 }
 
 func runScrape(cmd *cobra.Command, args []string) error {
+	// Get URL from argument or flag
+	if len(args) > 0 {
+		startURL = args[0]
+	}
+
+	// Check if URL is provided
+	if startURL == "" {
+		return fmt.Errorf("URL is required. Usage: mdscrape <url> or mdscrape --url <url>")
+	}
+
 	// Validate start URL
 	parsedURL, err := url.Parse(startURL)
 	if err != nil {
-		return fmt.Errorf("invalid start URL: %w", err)
+		return fmt.Errorf("invalid URL: %w", err)
 	}
 	if parsedURL.Scheme == "" || parsedURL.Host == "" {
-		return fmt.Errorf("start URL must include scheme and host (e.g., https://example.com)")
+		return fmt.Errorf("URL must include scheme and host (e.g., https://example.com)")
 	}
 
 	// Default limit URL to start URL

@@ -1,0 +1,58 @@
+---
+title: "useLightningcss"
+source: "https://nextjs.org/docs/app/api-reference/config/next-config-js/useLightningcss"
+---
+
+# useLightningcss
+
+Menu
+
+Using App Router
+
+Features available in /app
+
+Latest Version
+
+16.0.5
+
+[Configuration](/docs/app/api-reference/config)[next.config.js](/docs/app/api-reference/config/next-config-js)useLightningcss
+
+Copy page
+
+# useLightningcss
+
+This feature is currently experimental and subject to change, it's not recommended for production. Try it out and share your feedback on [GitHub](https://github.com/vercel/next.js/issues).
+
+Experimental support for using [Lightning CSS](https://lightningcss.dev) with webpack. Lightning CSS is a fast CSS transformer and minifier, written in Rust.
+
+If this option is not set, Next.js on webpack uses [PostCSS](https://postcss.org/) with [`postcss-preset-env`](https://www.npmjs.com/package/postcss-preset-env) by default.
+
+Turbopack uses Lightning CSS by default since Next 14.2. This configuration option has no effect on Turbopack. Turbopack always uses Lightning CSS.
+
+next.config.ts
+
+TypeScript
+
+JavaScriptTypeScript
+
+```
+import type { NextConfig } from 'next'
+ 
+const nextConfig: NextConfig = {
+  experimental: {
+    useLightningcss: false, // default, ignored on Turbopack
+  },
+}
+ 
+export default nextConfig
+```
+
+## [Version History](#version-history)
+
+VersionChanges`15.1.0`Support for `useSwcCss` was removed from Turbopack.`14.2.0`Turbopack's default CSS processor was changed from `@swc/css` to Lightning CSS. `useLightningcss` became ignored on Turbopack, and a legacy `experimental.turbo.useSwcCss` option was added.
+
+Was this helpful?
+
+supported.
+
+Send

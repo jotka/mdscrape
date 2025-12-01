@@ -1,0 +1,190 @@
+---
+title: "Guides"
+source: "https://nextjs.org/docs/15/app/guides"
+---
+
+# Guides
+
+Menu
+
+App Router 15
+
+Using App Router
+
+Features available in /app
+
+Version 15
+
+15.5.6
+
+[Next.js Docs](/docs/15)[App Router](/docs/15/app)Guides
+
+You are currently viewing documentation for version 15 of Next.js.
+
+# Guides
+
+[**Analytics**  
+\
+Measure and track page performance using Next.js Speed Insights](/docs/15/app/guides/analytics)
+
+[**Authentication**  
+\
+Learn how to implement authentication in your Next.js application.](/docs/15/app/guides/authentication)
+
+[**Backend for Frontend**  
+\
+Learn how to use Next.js as a backend framework](/docs/15/app/guides/backend-for-frontend)
+
+[**Caching**  
+\
+An overview of caching mechanisms in Next.js.](/docs/15/app/guides/caching)
+
+[**CI Build Caching**  
+\
+Learn how to configure CI to cache Next.js builds](/docs/15/app/guides/ci-build-caching)
+
+[**Content Security Policy**  
+\
+Learn how to set a Content Security Policy (CSP) for your Next.js application.](/docs/15/app/guides/content-security-policy)
+
+[**CSS-in-JS**  
+\
+Use CSS-in-JS libraries with Next.js](/docs/15/app/guides/css-in-js)
+
+[**Custom Server**  
+\
+Start a Next.js app programmatically using a custom server.](/docs/15/app/guides/custom-server)
+
+[**Data Security**  
+\
+Learn the built-in data security features in Next.js and learn best practices for protecting your application's data.](/docs/15/app/guides/data-security)
+
+[**Debugging**  
+\
+Learn how to debug your Next.js application with VS Code, Chrome DevTools, or Firefox DevTools.](/docs/15/app/guides/debugging)
+
+[**Draft Mode**  
+\
+Next.js has draft mode to toggle between static and dynamic pages. You can learn how it works with App Router here.](/docs/15/app/guides/draft-mode)
+
+[**Environment Variables**  
+\
+Learn to add and access environment variables in your Next.js application.](/docs/15/app/guides/environment-variables)
+
+[**Forms**  
+\
+Learn how to create forms in Next.js with React Server Actions.](/docs/15/app/guides/forms)
+
+[**ISR**  
+\
+Learn how to create or update static pages at runtime with Incremental Static Regeneration.](/docs/15/app/guides/incremental-static-regeneration)
+
+[**Instrumentation**  
+\
+Learn how to use instrumentation to run code at server startup in your Next.js app](/docs/15/app/guides/instrumentation)
+
+[**Internationalization**  
+\
+Add support for multiple languages with internationalized routing and localized content.](/docs/15/app/guides/internationalization)
+
+[**JSON-LD**  
+\
+Learn how to add JSON-LD to your Next.js application to describe your content to search engines and AI.](/docs/15/app/guides/json-ld)
+
+[**Lazy Loading**  
+\
+Lazy load imported libraries and React Components to improve your application's loading performance.](/docs/15/app/guides/lazy-loading)
+
+[**Development Environment**  
+\
+Learn how to optimize your local development environment with Next.js.](/docs/15/app/guides/local-development)
+
+[**MDX**  
+\
+Learn how to configure MDX and use it in your Next.js apps.](/docs/15/app/guides/mdx)
+
+[**Memory Usage**  
+\
+Optimize memory used by your application in development and production.](/docs/15/app/guides/memory-usage)
+
+[**Migrating**  
+\
+Learn how to migrate from popular frameworks to Next.js](/docs/15/app/guides/migrating)
+
+[**Multi-tenant**  
+\
+Learn how to build multi-tenant apps with the App Router.](/docs/15/app/guides/multi-tenant)
+
+[**Multi-zones**  
+\
+Learn how to build micro-frontends using Next.js Multi-Zones to deploy multiple Next.js apps under a single domain.](/docs/15/app/guides/multi-zones)
+
+[**OpenTelemetry**  
+\
+Learn how to instrument your Next.js app with OpenTelemetry.](/docs/15/app/guides/open-telemetry)
+
+[**Package Bundling**  
+\
+Learn how to optimize your application's server and client bundles.](/docs/15/app/guides/package-bundling)
+
+[**Prefetching**  
+\
+Learn how to configure prefetching in Next.js](/docs/15/app/guides/prefetching)
+
+[**Production**  
+\
+Recommendations to ensure the best performance and user experience before taking your Next.js application to production.](/docs/15/app/guides/production-checklist)
+
+[**PWAs**  
+\
+Learn how to build a Progressive Web Application (PWA) with Next.js.](/docs/15/app/guides/progressive-web-apps)
+
+[**Redirecting**  
+\
+Learn the different ways to handle redirects in Next.js.](/docs/15/app/guides/redirecting)
+
+[**Sass**  
+\
+Style your Next.js application using Sass.](/docs/15/app/guides/sass)
+
+[**Scripts**  
+\
+Optimize 3rd party scripts with the built-in Script component.](/docs/15/app/guides/scripts)
+
+[**Self-Hosting**  
+\
+Learn how to self-host your Next.js application on a Node.js server, Docker image, or static HTML files (static exports).](/docs/15/app/guides/self-hosting)
+
+[**SPAs**  
+\
+Next.js fully supports building Single-Page Applications (SPAs).](/docs/15/app/guides/single-page-applications)
+
+[**Static Exports**  
+\
+Next.js enables starting as a static site or Single-Page Application (SPA), then later optionally upgrading to use features that require a server.](/docs/15/app/guides/static-exports)
+
+[**Tailwind CSS v3**  
+\
+Style your Next.js Application using Tailwind CSS v3 for broader browser support.](/docs/15/app/guides/tailwind-v3-css)
+
+[**Testing**  
+\
+Learn how to set up Next.js with four commonly used testing tools — Cypress, Playwright, Vitest, and Jest.](/docs/15/app/guides/testing)
+
+[**Third Party Libraries**  
+\
+Optimize the performance of third-party libraries in your application with the \`@next/third-parties\` package.](/docs/15/app/guides/third-party-libraries)
+
+[**Upgrading**  
+\
+Learn how to upgrade to the latest versions of Next.js.](/docs/15/app/guides/upgrading)
+
+[**Videos**  
+\
+Recommendations and best practices for optimizing videos in your Next.js application.](/docs/15/app/guides/videos)
+
+Was this helpful?
+
+supported.
+
+Send

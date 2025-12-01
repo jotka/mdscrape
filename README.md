@@ -3,7 +3,7 @@
 A fast, concurrent CLI tool for scraping documentation websites and converting them to clean Markdown files. Perfect for building knowledge bases for AI agents.
 
 ```
-$ mdscrape -u https://docs.docker.com/reference/ -d 3
+$ mdscrape https://docs.docker.com/reference/ -d 3
 
 mdscrape - Web to Markdown scraper
 
@@ -52,29 +52,29 @@ go install github.com/yourusername/mdscrape@latest
 
 ```bash
 # Scrape Next.js documentation
-mdscrape -u https://nextjs.org/docs/
+mdscrape https://nextjs.org/docs/
 
 # Scrape Docker reference with custom output folder
-mdscrape -u https://docs.docker.com/reference/ -o ./docker-docs
+mdscrape https://docs.docker.com/reference/ -o ./docker-docs
 
 # Limit depth and threads for gentler scraping
-mdscrape -u https://react.dev/reference/ -d 5 -t 3
+mdscrape https://react.dev/reference/ -d 5 -t 3
 
 # Preview what would be scraped (dry run)
-mdscrape -u https://docs.python.org/3/library/ --dry-run
+mdscrape https://docs.python.org/3/library/ --dry-run
 ```
 
 ## Usage
 
 ```
-mdscrape -u <url> [options]
+mdscrape <url> [options]
 ```
 
 ### Options
 
 | Option | Short | Default | Description |
 |--------|-------|---------|-------------|
-| `--url` | `-u` | required | Starting URL to scrape |
+| `<url>` | | required | Starting URL to scrape (positional argument) |
 | `--limit` | `-l` | start URL | Only scrape URLs with this prefix |
 | `--output` | `-o` | auto | Output directory |
 | `--threads` | `-t` | 10 | Concurrent download threads |
@@ -90,16 +90,19 @@ mdscrape -u <url> [options]
 
 ```bash
 # Scrape only the API section
-mdscrape -u https://docs.example.com/api/ -l https://docs.example.com/api/
+mdscrape https://docs.example.com/api/
+
+# Limit to specific subsection
+mdscrape https://docs.example.com/ -l https://docs.example.com/api/
 
 # Use specific content selector
-mdscrape -u https://docs.example.com/ -s "main.docs-content"
+mdscrape https://docs.example.com/ -s "main.docs-content"
 
 # Exclude changelog and blog
-mdscrape -u https://docs.example.com/ -e "/changelog" -e "/blog"
+mdscrape https://docs.example.com/ -e "/changelog" -e "/blog"
 
 # Gentle scraping with delays
-mdscrape -u https://docs.example.com/ -t 2 --delay 500
+mdscrape https://docs.example.com/ -t 2 --delay 500
 ```
 
 ## Output

@@ -1,0 +1,48 @@
+---
+title: "Components"
+source: "https://nextjs.org/docs/app/api-reference/components"
+---
+
+# Components
+
+Menu
+
+Using App Router
+
+Features available in /app
+
+Latest Version
+
+16.0.5
+
+[App Router](/docs/app)[API Reference](/docs/app/api-reference)Components
+
+Copy page
+
+# Components
+
+[**Font**  
+\
+Optimizing loading web fonts with the built-in \`next/font\` loaders.](/docs/app/api-reference/components/font)
+
+[**Form Component**  
+\
+Learn how to use the \`&lt;Form&gt;\` component to handle form submissions and search params updates with client-side navigation.](/docs/app/api-reference/components/form)
+
+[**Image Component**  
+\
+Optimize Images in your Next.js Application using the built-in \`next/image\` Component.](/docs/app/api-reference/components/image)
+
+[**Link Component**  
+\
+Enable fast client-side navigation with the built-in \`next/link\` component.](/docs/app/api-reference/components/link)
+
+[**Script Component**  
+\
+Optimize third-party scripts in your Next.js application using the built-in \`next/script\` Component.](/docs/app/api-reference/components/script)
+
+Was this helpful?
+
+supported.
+
+Send
