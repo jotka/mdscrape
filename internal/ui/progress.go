@@ -377,10 +377,6 @@ func (m *Model) renderFinalStats() string {
 				b.WriteString(infoStyle.Render(fmt.Sprintf("  ... and %d more errors\n", len(m.errorURLs)-maxErrors)))
 				break
 			}
-			// Truncate long error messages
-			if len(errURL) > 80 {
-				errURL = errURL[:77] + "..."
-			}
 			b.WriteString(fmt.Sprintf("  %s %s\n", errorStyle.Render("✗"), infoStyle.Render(errURL)))
 		}
 		b.WriteString("\n")
