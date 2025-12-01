@@ -184,15 +184,16 @@ For example, to build a "Next.js expert" agent:
 # Scrape Next.js documentation
 mdscrape https://nextjs.org/docs/ -o nextjs-docs
 
-# Create a CLAUDE.md instruction file for your project
-cat > CLAUDE.md << 'EOF'
+# Create a specialized agent in .claude/agents/
+mkdir -p .claude/agents
+cat > .claude/agents/nextjs-expert.md << 'EOF'
 You are an expert Next.js developer. When answering questions about Next.js,
 refer to the documentation in the `nextjs-docs/` folder for accurate,
 up-to-date information about APIs, patterns, and best practices.
 EOF
 ```
 
-This gives AI assistants like Claude access to the complete, current documentation as context, enabling more accurate and framework-specific responses. The markdown format preserves code examples, API references, and structural information that helps the AI understand and apply the documentation correctly.
+Now you can invoke this agent in Claude Code with `/nextjs-expert`. The AI will have access to the complete, current documentation as context, enabling more accurate and framework-specific responses. The markdown format preserves code examples, API references, and structural information that helps the AI understand and apply the documentation correctly.
 
 You can combine multiple documentation sources to create specialized agents:
 
