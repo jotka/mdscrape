@@ -60,10 +60,11 @@ var (
 
 // ThreadStatus represents the status of a single thread
 type ThreadStatus struct {
-	URL     string
-	Status  string
-	Size    int64
-	Spinner spinner.Model
+	URL      string
+	Status   string
+	Size     int64
+	Spinner  spinner.Model
+	Progress progress.Model
 }
 
 // Model is the Bubble Tea model for the progress UI
@@ -98,15 +99,24 @@ type resultMsg crawler.PageResult
 
 // NewModel creates a new UI model
 func NewModel(config *crawler.Config) *Model {
-	// Create spinners for each thread
+	// Create spinners and progress bars for each thread
 	threads := make([]ThreadStatus, config.Threads)
 	for i := range threads {
 		s := spinner.New()
 		s.Spinner = spinner.Dot
 		s.Style = spinnerStyle
+
+		// Small progress bar for each thread
+		threadProgress := progress.New(
+			progress.WithDefaultGradient(),
+			progress.WithWidth(15),
+			progress.WithoutPercentage(),
+		)
+
 		threads[i] = ThreadStatus{
-			Spinner: s,
-			Status:  "idle",
+			Spinner:  s,
+			Progress: threadProgress,
+			Status:   "idle",
 		}
 	}
 
@@ -314,10 +324,13 @@ func (m *Model) View() string {
 			}
 
 			// Get spinner for this thread
-			spinnerView := m.threads[i%len(m.threads)].Spinner.View()
+			threadIdx := i % len(m.threads)
+			spinnerView := m.threads[threadIdx].Spinner.View()
 
-			// Mini progress bar (pulsing effect based on thread index)
-			miniBar := renderMiniBar(i)
+			// Small progress bar (animated pulsing effect)
+			// Use a cycling value for the "in progress" animation
+			pulseValue := 0.3 + 0.4*float64((i+int(time.Now().UnixNano()/100000000))%5)/4.0
+			miniProgressBar := m.threads[threadIdx].Progress.ViewAs(pulseValue)
 
 			// Truncate URL for display
 			displayURL := truncateURL(url, 50)
@@ -325,7 +338,7 @@ func (m *Model) View() string {
 			b.WriteString(fmt.Sprintf("  %s %s %s %s\n",
 				threadNumStyle.Render(fmt.Sprintf("[%d]", i+1)),
 				spinnerView,
-				miniBar,
+				miniProgressBar,
 				activeURLStyle.Render(displayURL),
 			))
 		}
@@ -364,6 +377,27 @@ func (m *Model) renderFinalStats() string {
 	b.WriteString(successStyle.Render("✓ Scraping complete!"))
 	b.WriteString("\n\n")
 
+	// List errors if any (before the summary table)
+	m.mu.RLock()
+	if len(m.errorURLs) > 0 {
+		b.WriteString(errorStyle.Render("Errors:"))
+		b.WriteString("\n")
+		maxErrors := 10
+		for i, errURL := range m.errorURLs {
+			if i >= maxErrors {
+				b.WriteString(infoStyle.Render(fmt.Sprintf("  ... and %d more errors\n", len(m.errorURLs)-maxErrors)))
+				break
+			}
+			// Truncate long error messages
+			if len(errURL) > 80 {
+				errURL = errURL[:77] + "..."
+			}
+			b.WriteString(fmt.Sprintf("  %s %s\n", errorStyle.Render("✗"), infoStyle.Render(errURL)))
+		}
+		b.WriteString("\n")
+	}
+	m.mu.RUnlock()
+
 	// Build table rows
 	rows := [][]string{
 		{"Files", fmt.Sprintf("%d", m.stats.TotalDownloaded)},
@@ -397,27 +431,6 @@ func (m *Model) renderFinalStats() string {
 
 	b.WriteString(fmt.Sprintf("\n%s %s\n", infoStyle.Render("Output:"), urlStyle.Render(m.config.OutputDir)))
 
-	// List errors if any
-	m.mu.RLock()
-	if len(m.errorURLs) > 0 {
-		b.WriteString("\n")
-		b.WriteString(errorStyle.Render("Errors:"))
-		b.WriteString("\n")
-		maxErrors := 10
-		for i, errURL := range m.errorURLs {
-			if i >= maxErrors {
-				b.WriteString(infoStyle.Render(fmt.Sprintf("  ... and %d more errors\n", len(m.errorURLs)-maxErrors)))
-				break
-			}
-			// Truncate long error messages
-			if len(errURL) > 80 {
-				errURL = errURL[:77] + "..."
-			}
-			b.WriteString(fmt.Sprintf("  %s %s\n", errorStyle.Render("✗"), infoStyle.Render(errURL)))
-		}
-	}
-	m.mu.RUnlock()
-
 	b.WriteString("\n")
 	return b.String()
 }
@@ -435,16 +448,6 @@ func formatBytes(bytes int64) string {
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
 
-// renderMiniBar creates a small animated progress bar
-func renderMiniBar(index int) string {
-	barStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-
-	// Create a small pulsing bar effect
-	bars := []string{"▰▰▰▱▱", "▱▰▰▰▱", "▱▱▰▰▰", "▰▱▱▰▰", "▰▰▱▱▰"}
-	bar := bars[index%len(bars)]
-
-	return barStyle.Render(bar)
-}
 
 func truncateURL(url string, maxLen int) string {
 	if len(url) <= maxLen {
@@ -474,7 +477,7 @@ func Run(config *crawler.Config) error {
 	}
 
 	model := NewModel(config)
-	p := tea.NewProgram(model, tea.WithAltScreen())
+	p := tea.NewProgram(model)
 
 	finalModel, err := p.Run()
 	if err != nil {
