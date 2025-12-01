@@ -24,12 +24,6 @@ cd mdscrape
 go build -o mdscrape .
 ```
 
-### Go install
-
-```bash
-go install github.com/yourusername/mdscrape@latest
-```
-
 ## Quick start
 
 ```bash
