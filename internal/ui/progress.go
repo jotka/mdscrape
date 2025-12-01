@@ -67,6 +67,7 @@ type Model struct {
 	width        int
 	mu           sync.RWMutex
 	recentFiles  []string
+	errorURLs    []string
 	maxRecent    int
 	quitting     bool
 }
@@ -158,6 +159,10 @@ func (m *Model) processResults() {
 			if len(m.recentFiles) > m.maxRecent {
 				m.recentFiles = m.recentFiles[1:]
 			}
+		} else if result.Error != nil {
+			// Track error URLs
+			errMsg := fmt.Sprintf("%s: %v", result.URL, result.Error)
+			m.errorURLs = append(m.errorURLs, errMsg)
 		}
 		m.mu.Unlock()
 	}
@@ -344,20 +349,53 @@ func (m *Model) renderFinalStats() string {
 	b.WriteString(successStyle.Render("✓ Scraping complete!"))
 	b.WriteString("\n\n")
 
-	b.WriteString(fmt.Sprintf("  %s  %s\n", infoStyle.Render("Files:"), statsStyle.Render(fmt.Sprintf("%d", m.stats.TotalDownloaded))))
-	b.WriteString(fmt.Sprintf("  %s   %s\n", infoStyle.Render("Size:"), statsStyle.Render(formatBytes(m.stats.TotalBytes))))
-	b.WriteString(fmt.Sprintf("  %s   %s\n", infoStyle.Render("Time:"), statsStyle.Render(elapsed.String())))
-
-	if m.stats.TotalErrors > 0 {
-		b.WriteString(fmt.Sprintf("  %s %s\n", infoStyle.Render("Errors:"), errorStyle.Render(fmt.Sprintf("%d", m.stats.TotalErrors))))
-	}
+	// Summary table
+	b.WriteString(infoStyle.Render("┌─────────────────────────────────────┐"))
+	b.WriteString("\n")
+	b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Files", statsStyle.Render(fmt.Sprintf("%d", m.stats.TotalDownloaded))) + infoStyle.Render("│"))
+	b.WriteString("\n")
+	b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Size", statsStyle.Render(formatBytes(m.stats.TotalBytes))) + infoStyle.Render("│"))
+	b.WriteString("\n")
+	b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Time", statsStyle.Render(elapsed.String())) + infoStyle.Render("│"))
+	b.WriteString("\n")
 
 	if m.stats.TotalDownloaded > 0 && elapsed.Seconds() > 0 {
 		rate := float64(m.stats.TotalDownloaded) / elapsed.Seconds()
-		b.WriteString(fmt.Sprintf("  %s   %s\n", infoStyle.Render("Rate:"), statsStyle.Render(fmt.Sprintf("%.1f files/sec", rate))))
+		b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Rate", statsStyle.Render(fmt.Sprintf("%.1f files/sec", rate))) + infoStyle.Render("│"))
+		b.WriteString("\n")
 	}
 
-	b.WriteString(fmt.Sprintf("\n  %s %s\n", infoStyle.Render("Output:"), urlStyle.Render(m.config.OutputDir)))
+	if m.stats.TotalErrors > 0 {
+		b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Errors", errorStyle.Render(fmt.Sprintf("%d", m.stats.TotalErrors))) + infoStyle.Render("│"))
+		b.WriteString("\n")
+	}
+
+	b.WriteString(infoStyle.Render("└─────────────────────────────────────┘"))
+	b.WriteString("\n")
+
+	b.WriteString(fmt.Sprintf("\n%s %s\n", infoStyle.Render("Output:"), urlStyle.Render(m.config.OutputDir)))
+
+	// List errors if any
+	m.mu.RLock()
+	if len(m.errorURLs) > 0 {
+		b.WriteString("\n")
+		b.WriteString(errorStyle.Render("Errors:"))
+		b.WriteString("\n")
+		maxErrors := 10
+		for i, errURL := range m.errorURLs {
+			if i >= maxErrors {
+				b.WriteString(infoStyle.Render(fmt.Sprintf("  ... and %d more errors\n", len(m.errorURLs)-maxErrors)))
+				break
+			}
+			// Truncate long error messages
+			if len(errURL) > 80 {
+				errURL = errURL[:77] + "..."
+			}
+			b.WriteString(fmt.Sprintf("  %s %s\n", errorStyle.Render("✗"), infoStyle.Render(errURL)))
+		}
+	}
+	m.mu.RUnlock()
+
 	b.WriteString("\n")
 	return b.String()
 }
