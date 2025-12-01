@@ -1,5 +1,7 @@
 # mdscrape
 
+[![Release](https://github.com/jotka/mdscrape/actions/workflows/release.yml/badge.svg)](https://github.com/jotka/mdscrape/actions/workflows/release.yml)
+
 A fast, concurrent CLI tool for scraping documentation websites and converting them to clean Markdown files. Perfect for building knowledge bases for AI agents.
 
 ![mdscrape in action](screenshots/SCR-20251201-hyus.png)
