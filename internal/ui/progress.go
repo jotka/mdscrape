@@ -242,7 +242,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) View() string {
 	if m.quitting {
-		return "" // Final stats will be printed after TUI exits
+		// Print final view with newlines to push content up, not clear screen
+		return "\n\n"
 	}
 
 	var b strings.Builder
@@ -465,16 +466,14 @@ func Run(config *crawler.Config) error {
 	model := NewModel(config)
 	p := tea.NewProgram(model)
 
-	finalModel, err := p.Run()
+	_, err := p.Run()
 	if err != nil {
 		// Fall back to quiet mode if TUI fails
 		return runQuiet(config)
 	}
 
-	// Print final summary after TUI exits
-	if m, ok := finalModel.(*Model); ok {
-		fmt.Print(m.renderFinalStats())
-	}
+	// Print final summary after TUI exits (use original model pointer which has the data)
+	fmt.Print(model.renderFinalStats())
 
 	return nil
 }
