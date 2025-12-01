@@ -49,7 +49,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          go build -ldflags="-s -w -X main.Version=${{ github.ref_name }}" -o ${{ matrix.name }} .
+          go build -ldflags="-s -w -X mdscrape/cmd.Version=${{ github.ref_name }}" -o ${{ matrix.name }} .
 
       - name: Create archive (Unix)
         if: matrix.goos != 'windows'

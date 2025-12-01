@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -12,19 +13,27 @@ import (
 	"mdscrape/internal/ui"
 )
 
+// Version information (set via ldflags)
 var (
-	startURL    string
-	limitURL    string
-	outputDir   string
-	threads     int
-	depth       int
-	selector    string
-	delay       int
-	verbose     bool
-	quiet       bool
-	dryRun      bool
-	userAgent   string
+	Version   = "dev"
+	GoVersion = runtime.Version()
+	Author    = "Jarek Krochmalski"
+)
+
+var (
+	startURL        string
+	limitURL        string
+	outputDir       string
+	threads         int
+	depth           int
+	selector        string
+	delay           int
+	verbose         bool
+	quiet           bool
+	dryRun          bool
+	userAgent       string
 	excludePatterns []string
+	showVersion     bool
 )
 
 var rootCmd = &cobra.Command{
@@ -50,6 +59,7 @@ Examples:
   mdscrape https://docs.docker.com/reference/ -s "article.main-content"`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runScrape,
+	Version: Version,
 }
 
 func Execute() {
@@ -59,6 +69,11 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.SetVersionTemplate(fmt.Sprintf(`mdscrape %s
+Author: %s
+Go version: %s
+`, Version, Author, GoVersion))
+
 	rootCmd.Flags().StringVarP(&startURL, "url", "u", "", "Starting URL to scrape (can also be passed as argument)")
 	rootCmd.Flags().StringVarP(&limitURL, "limit", "l", "", "Limit scraping to URLs matching this prefix (defaults to start URL)")
 	rootCmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output directory (defaults to URL-based path)")
