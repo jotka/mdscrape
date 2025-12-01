@@ -121,11 +121,12 @@ func (m *Model) Init() tea.Cmd {
 	// Create and start crawler
 	m.crawler = crawler.NewCrawler(m.config, progressCallback)
 
-	// Start crawler in background
+	// Start crawler in background and wait for completion
 	go func() {
 		if err := m.crawler.Start(); err != nil {
 			// Handle error
 		}
+		m.crawler.Wait() // This closes the results channel
 	}()
 
 	// Start processing results
