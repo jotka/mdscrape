@@ -242,7 +242,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) View() string {
 	if m.quitting {
-		return m.renderFinalStats()
+		return "" // Final stats will be printed after TUI exits
 	}
 
 	var b strings.Builder
