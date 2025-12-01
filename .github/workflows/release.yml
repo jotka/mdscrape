@@ -17,18 +17,23 @@ jobs:
           - goos: darwin
             goarch: amd64
             name: mdscrape-darwin-amd64
+            archive: mdscrape-darwin-amd64.tar.gz
           - goos: darwin
             goarch: arm64
             name: mdscrape-darwin-arm64
+            archive: mdscrape-darwin-arm64.tar.gz
           - goos: linux
             goarch: amd64
             name: mdscrape-linux-amd64
+            archive: mdscrape-linux-amd64.tar.gz
           - goos: linux
             goarch: arm64
             name: mdscrape-linux-arm64
+            archive: mdscrape-linux-arm64.tar.gz
           - goos: windows
             goarch: amd64
             name: mdscrape-windows-amd64.exe
+            archive: mdscrape-windows-amd64.zip
 
     steps:
       - name: Checkout
@@ -46,11 +51,21 @@ jobs:
         run: |
           go build -ldflags="-s -w -X main.Version=${{ github.ref_name }}" -o ${{ matrix.name }} .
 
+      - name: Create archive (Unix)
+        if: matrix.goos != 'windows'
+        run: |
+          tar -czvf ${{ matrix.archive }} ${{ matrix.name }}
+
+      - name: Create archive (Windows)
+        if: matrix.goos == 'windows'
+        run: |
+          zip ${{ matrix.archive }} ${{ matrix.name }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.name }}
-          path: ${{ matrix.name }}
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}
 
   release:
     needs: build
