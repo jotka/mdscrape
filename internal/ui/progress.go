@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 	"golang.org/x/term"
 
 	"mdscrape/internal/crawler"
@@ -45,6 +46,16 @@ var (
 
 	activeURLStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("117"))
+
+	tableHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("229"))
+
+	tableCellStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("252"))
+
+	tableBorderStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("238"))
 )
 
 // ThreadStatus represents the status of a single thread
@@ -305,12 +316,16 @@ func (m *Model) View() string {
 			// Get spinner for this thread
 			spinnerView := m.threads[i%len(m.threads)].Spinner.View()
 
-			// Truncate URL for display
-			displayURL := truncateURL(url, 60)
+			// Mini progress bar (pulsing effect based on thread index)
+			miniBar := renderMiniBar(i)
 
-			b.WriteString(fmt.Sprintf("  %s %s %s\n",
+			// Truncate URL for display
+			displayURL := truncateURL(url, 50)
+
+			b.WriteString(fmt.Sprintf("  %s %s %s %s\n",
 				threadNumStyle.Render(fmt.Sprintf("[%d]", i+1)),
 				spinnerView,
+				miniBar,
 				activeURLStyle.Render(displayURL),
 			))
 		}
@@ -349,28 +364,35 @@ func (m *Model) renderFinalStats() string {
 	b.WriteString(successStyle.Render("✓ Scraping complete!"))
 	b.WriteString("\n\n")
 
-	// Summary table
-	b.WriteString(infoStyle.Render("┌─────────────────────────────────────┐"))
-	b.WriteString("\n")
-	b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Files", statsStyle.Render(fmt.Sprintf("%d", m.stats.TotalDownloaded))) + infoStyle.Render("│"))
-	b.WriteString("\n")
-	b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Size", statsStyle.Render(formatBytes(m.stats.TotalBytes))) + infoStyle.Render("│"))
-	b.WriteString("\n")
-	b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Time", statsStyle.Render(elapsed.String())) + infoStyle.Render("│"))
-	b.WriteString("\n")
+	// Build table rows
+	rows := [][]string{
+		{"Files", fmt.Sprintf("%d", m.stats.TotalDownloaded)},
+		{"Size", formatBytes(m.stats.TotalBytes)},
+		{"Time", elapsed.String()},
+	}
 
 	if m.stats.TotalDownloaded > 0 && elapsed.Seconds() > 0 {
 		rate := float64(m.stats.TotalDownloaded) / elapsed.Seconds()
-		b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Rate", statsStyle.Render(fmt.Sprintf("%.1f files/sec", rate))) + infoStyle.Render("│"))
-		b.WriteString("\n")
+		rows = append(rows, []string{"Rate", fmt.Sprintf("%.1f files/sec", rate)})
 	}
 
 	if m.stats.TotalErrors > 0 {
-		b.WriteString(infoStyle.Render("│") + fmt.Sprintf(" %-12s %20s ", "Errors", errorStyle.Render(fmt.Sprintf("%d", m.stats.TotalErrors))) + infoStyle.Render("│"))
-		b.WriteString("\n")
+		rows = append(rows, []string{"Errors", fmt.Sprintf("%d", m.stats.TotalErrors)})
 	}
 
-	b.WriteString(infoStyle.Render("└─────────────────────────────────────┘"))
+	// Create table
+	t := table.New().
+		Border(lipgloss.RoundedBorder()).
+		BorderStyle(tableBorderStyle).
+		StyleFunc(func(row, col int) lipgloss.Style {
+			if col == 0 {
+				return tableHeaderStyle
+			}
+			return tableCellStyle
+		}).
+		Rows(rows...)
+
+	b.WriteString(t.String())
 	b.WriteString("\n")
 
 	b.WriteString(fmt.Sprintf("\n%s %s\n", infoStyle.Render("Output:"), urlStyle.Render(m.config.OutputDir)))
@@ -411,6 +433,17 @@ func formatBytes(bytes int64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
+// renderMiniBar creates a small animated progress bar
+func renderMiniBar(index int) string {
+	barStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+	// Create a small pulsing bar effect
+	bars := []string{"▰▰▰▱▱", "▱▰▰▰▱", "▱▱▰▰▰", "▰▱▱▰▰", "▰▰▱▱▰"}
+	bar := bars[index%len(bars)]
+
+	return barStyle.Render(bar)
 }
 
 func truncateURL(url string, maxLen int) string {
