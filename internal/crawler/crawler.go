@@ -37,6 +37,7 @@ type Stats struct {
 	TotalBytes      int64
 	TotalErrors     int64
 	StartTime       time.Time
+	ActiveURLs      []string
 }
 
 // PageResult represents the result of processing a page
@@ -62,7 +63,7 @@ type Crawler struct {
 	visited    sync.Map
 	results    chan PageResult
 	progress   ProgressCallback
-	threadURLs sync.Map // Track what each thread is doing
+	activeURLs sync.Map // Track active URLs being processed
 	mu         sync.Mutex
 }
 
@@ -98,9 +99,18 @@ func (c *Crawler) setupCollector() {
 		Delay:       time.Duration(c.config.DelayMs) * time.Millisecond,
 	})
 
+	// Track request start
+	c.collector.OnRequest(func(r *colly.Request) {
+		url := r.URL.String()
+		c.activeURLs.Store(url, time.Now())
+	})
+
 	// Handle HTML responses
 	c.collector.OnResponse(func(r *colly.Response) {
 		url := r.Request.URL.String()
+
+		// Remove from active URLs
+		defer c.activeURLs.Delete(url)
 
 		// Check if within limit
 		if !utils.IsURLWithinLimit(url, c.config.LimitURL) {
@@ -155,9 +165,11 @@ func (c *Crawler) setupCollector() {
 
 	// Handle errors
 	c.collector.OnError(func(r *colly.Response, err error) {
+		url := r.Request.URL.String()
+		c.activeURLs.Delete(url)
 		atomic.AddInt64(&c.stats.TotalErrors, 1)
 		if c.progress != nil {
-			c.progress(0, r.Request.URL.String(), "error", 0)
+			c.progress(0, url, "error", 0)
 		}
 	})
 }
@@ -252,12 +264,22 @@ func (c *Crawler) Results() <-chan PageResult {
 
 // GetStats returns current statistics
 func (c *Crawler) GetStats() Stats {
+	// Collect active URLs
+	var activeURLs []string
+	c.activeURLs.Range(func(key, value interface{}) bool {
+		if url, ok := key.(string); ok {
+			activeURLs = append(activeURLs, url)
+		}
+		return true
+	})
+
 	return Stats{
 		TotalDiscovered: atomic.LoadInt64(&c.stats.TotalDiscovered),
 		TotalDownloaded: atomic.LoadInt64(&c.stats.TotalDownloaded),
 		TotalBytes:      atomic.LoadInt64(&c.stats.TotalBytes),
 		TotalErrors:     atomic.LoadInt64(&c.stats.TotalErrors),
 		StartTime:       c.stats.StartTime,
+		ActiveURLs:      activeURLs,
 	}
 }
 

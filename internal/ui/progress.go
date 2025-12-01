@@ -38,6 +38,13 @@ var (
 
 	spinnerStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("205"))
+
+	threadNumStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("243")).
+			Width(4)
+
+	activeURLStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("117"))
 )
 
 // ThreadStatus represents the status of a single thread
@@ -269,17 +276,49 @@ func (m *Model) View() string {
 	}
 	m.mu.RUnlock()
 
+	// Active threads
+	if !m.done && len(m.stats.ActiveURLs) > 0 {
+		b.WriteString(infoStyle.Render("Active downloads:"))
+		b.WriteString("\n")
+
+		// Show up to config.Threads active URLs
+		maxShow := m.config.Threads
+		if maxShow > 10 {
+			maxShow = 10 // Cap display at 10 for readability
+		}
+
+		for i, url := range m.stats.ActiveURLs {
+			if i >= maxShow {
+				remaining := len(m.stats.ActiveURLs) - maxShow
+				if remaining > 0 {
+					b.WriteString(infoStyle.Render(fmt.Sprintf("  ... and %d more\n", remaining)))
+				}
+				break
+			}
+
+			// Get spinner for this thread
+			spinnerView := m.threads[i%len(m.threads)].Spinner.View()
+
+			// Truncate URL for display
+			displayURL := truncateURL(url, 60)
+
+			b.WriteString(fmt.Sprintf("  %s %s %s\n",
+				threadNumStyle.Render(fmt.Sprintf("[%d]", i+1)),
+				spinnerView,
+				activeURLStyle.Render(displayURL),
+			))
+		}
+		b.WriteString("\n")
+	}
+
 	// Status
 	if m.done {
-		b.WriteString("\n")
 		b.WriteString(successStyle.Render("✓ Scraping complete!"))
 		b.WriteString("\n")
-	} else {
-		b.WriteString("\n")
-		// Show active spinner
+	} else if len(m.stats.ActiveURLs) == 0 {
 		b.WriteString(m.threads[0].Spinner.View())
 		b.WriteString(" ")
-		b.WriteString(infoStyle.Render("Scraping in progress..."))
+		b.WriteString(infoStyle.Render("Discovering pages..."))
 		b.WriteString("\n")
 	}
 
@@ -324,6 +363,26 @@ func formatBytes(bytes int64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
+func truncateURL(url string, maxLen int) string {
+	if len(url) <= maxLen {
+		return url
+	}
+
+	// Try to show the path part
+	if idx := strings.Index(url, "://"); idx != -1 {
+		afterScheme := url[idx+3:]
+		if slashIdx := strings.Index(afterScheme, "/"); slashIdx != -1 {
+			path := afterScheme[slashIdx:]
+			if len(path) > maxLen-3 {
+				return "..." + path[len(path)-(maxLen-3):]
+			}
+			return "..." + path
+		}
+	}
+
+	return "..." + url[len(url)-(maxLen-3):]
 }
 
 // Run starts the UI and crawler
