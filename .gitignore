@@ -2,3 +2,4 @@ mdscrape
 .DS_Store
 build/
 *_docs
+docs.docker.com_*
