@@ -42,7 +42,7 @@ var (
 
 	threadNumStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("243")).
-			Width(4)
+			Width(3)
 
 	activeURLStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("117"))
@@ -60,11 +60,10 @@ var (
 
 // ThreadStatus represents the status of a single thread
 type ThreadStatus struct {
-	URL      string
-	Status   string
-	Size     int64
-	Spinner  spinner.Model
-	Progress progress.Model
+	URL     string
+	Status  string
+	Size    int64
+	Spinner spinner.Model
 }
 
 // Model is the Bubble Tea model for the progress UI
@@ -99,24 +98,16 @@ type resultMsg crawler.PageResult
 
 // NewModel creates a new UI model
 func NewModel(config *crawler.Config) *Model {
-	// Create spinners and progress bars for each thread
+	// Create spinners for each thread
 	threads := make([]ThreadStatus, config.Threads)
 	for i := range threads {
 		s := spinner.New()
-		s.Spinner = spinner.Dot
+		s.Spinner = spinner.Line
 		s.Style = spinnerStyle
 
-		// Small progress bar for each thread
-		threadProgress := progress.New(
-			progress.WithDefaultGradient(),
-			progress.WithWidth(15),
-			progress.WithoutPercentage(),
-		)
-
 		threads[i] = ThreadStatus{
-			Spinner:  s,
-			Progress: threadProgress,
-			Status:   "idle",
+			Spinner: s,
+			Status:  "idle",
 		}
 	}
 
@@ -216,6 +207,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tickMsg:
 		if m.done {
+			m.quitting = true
 			return m, tea.Quit
 		}
 
@@ -327,18 +319,12 @@ func (m *Model) View() string {
 			threadIdx := i % len(m.threads)
 			spinnerView := m.threads[threadIdx].Spinner.View()
 
-			// Small progress bar (animated pulsing effect)
-			// Use a cycling value for the "in progress" animation
-			pulseValue := 0.3 + 0.4*float64((i+int(time.Now().UnixNano()/100000000))%5)/4.0
-			miniProgressBar := m.threads[threadIdx].Progress.ViewAs(pulseValue)
-
 			// Truncate URL for display
-			displayURL := truncateURL(url, 50)
+			displayURL := truncateURL(url, 60)
 
-			b.WriteString(fmt.Sprintf("  %s %s %s %s\n",
+			b.WriteString(fmt.Sprintf("  %s %s %s\n",
 				threadNumStyle.Render(fmt.Sprintf("[%d]", i+1)),
 				spinnerView,
-				miniProgressBar,
 				activeURLStyle.Render(displayURL),
 			))
 		}
