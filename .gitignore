@@ -1,3 +1,4 @@
 mdscrape
 .DS_Store
 build/
+*_docs
