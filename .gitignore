@@ -1,5 +1,11 @@
 mdscrape
 .DS_Store
 build/
+
+# Scraped output directories
 *_docs
-docs.docker.com_*
+*_docs/
+*.com_*
+*.org_*
+*.io_*
+*.dev_*
