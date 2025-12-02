@@ -19,10 +19,17 @@ A fast, concurrent CLI tool for scraping documentation websites and converting t
 
 ## Installation
 
+### Homebrew (macOS/Linux)
+
+```bash
+brew tap jotka/tap
+brew install mdscrape
+```
+
 ### From source
 
 ```bash
-git clone https://github.com/yourusername/mdscrape.git
+git clone https://github.com/jotka/mdscrape.git
 cd mdscrape
 go build -o mdscrape .
 ```
