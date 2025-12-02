@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -143,4 +144,15 @@ func MatchesPattern(urlStr string, patterns []string) bool {
 		}
 	}
 	return false
+}
+
+// ValidatePatterns checks if all exclude patterns are valid regex
+func ValidatePatterns(patterns []string) error {
+	for _, pattern := range patterns {
+		_, err := regexp.Compile(pattern)
+		if err != nil {
+			return fmt.Errorf("invalid exclude pattern %q: %w", pattern, err)
+		}
+	}
+	return nil
 }

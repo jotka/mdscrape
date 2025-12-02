@@ -2,6 +2,7 @@ package converter
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -26,7 +27,7 @@ func (c *Converter) Convert(html string, pageURL string, title string) (string, 
 	// Parse HTML
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
 	// Remove unwanted elements
@@ -64,7 +65,7 @@ func (c *Converter) Convert(html string, pageURL string, title string) (string, 
 	// Convert to Markdown using the package function
 	markdown, err := htmltomarkdown.ConvertString(contentHTML)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to convert HTML to markdown: %w", err)
 	}
 
 	// Post-process markdown

@@ -9,3 +9,4 @@ build/
 *.org_*
 *.io_*
 *.dev_*
+dist/

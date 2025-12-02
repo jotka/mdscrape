@@ -11,6 +11,7 @@ import (
 
 	"mdscrape/internal/crawler"
 	"mdscrape/internal/ui"
+	"mdscrape/internal/utils"
 )
 
 // Version information (set via ldflags)
@@ -125,6 +126,11 @@ func runScrape(cmd *cobra.Command, args []string) error {
 	// Generate default output directory from URL
 	if outputDir == "" {
 		outputDir = generateOutputDir(parsedURL)
+	}
+
+	// Validate exclude patterns
+	if err := utils.ValidatePatterns(excludePatterns); err != nil {
+		return err
 	}
 
 	// Create config

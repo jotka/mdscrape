@@ -90,3 +90,4 @@ Edit `cmd/root.go`, modify flag defaults in `init()`.
 ## Git commits
 
 Do not include Co-Authored-By or "Generated with Claude Code" lines in commit messages.
+- do not release until explicitly asked

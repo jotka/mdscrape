@@ -17,6 +17,19 @@ import (
 	"mdscrape/internal/crawler"
 )
 
+// UI constants
+const (
+	defaultProgressWidth = 50
+	maxProgressWidth     = 80
+	maxActiveURLsDisplay = 10
+	maxRecentFiles       = 5
+	maxErrorsDisplay     = 10
+	tickInterval         = 100 * time.Millisecond
+	urlTruncateLength    = 60
+	pathTruncateLength   = 50
+	pathTruncateSuffix   = 47
+)
+
 var (
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
@@ -113,15 +126,15 @@ func NewModel(config *crawler.Config) *Model {
 
 	p := progress.New(
 		progress.WithDefaultGradient(),
-		progress.WithWidth(50),
+		progress.WithWidth(defaultProgressWidth),
 	)
 
 	return &Model{
 		config:      config,
 		threads:     threads,
 		progress:    p,
-		maxRecent:   5,
-		recentFiles: make([]string, 0, 5),
+		maxRecent:   maxRecentFiles,
+		recentFiles: make([]string, 0, maxRecentFiles),
 	}
 }
 
@@ -164,8 +177,8 @@ func (m *Model) processResults() {
 		if result.Success {
 			// Add to recent files
 			shortPath := result.FilePath
-			if len(shortPath) > 50 {
-				shortPath = "..." + shortPath[len(shortPath)-47:]
+			if len(shortPath) > pathTruncateLength {
+				shortPath = "..." + shortPath[len(shortPath)-pathTruncateSuffix:]
 			}
 			m.recentFiles = append(m.recentFiles, shortPath)
 			if len(m.recentFiles) > m.maxRecent {
@@ -184,7 +197,7 @@ func (m *Model) processResults() {
 }
 
 func tickCmd() tea.Cmd {
-	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
+	return tea.Tick(tickInterval, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
 }
@@ -201,8 +214,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.progress.Width = msg.Width - 20
-		if m.progress.Width > 80 {
-			m.progress.Width = 80
+		if m.progress.Width > maxProgressWidth {
+			m.progress.Width = maxProgressWidth
 		}
 
 	case tickMsg:
@@ -305,8 +318,8 @@ func (m *Model) View() string {
 
 		// Show up to config.Threads active URLs
 		maxShow := m.config.Threads
-		if maxShow > 10 {
-			maxShow = 10 // Cap display at 10 for readability
+		if maxShow > maxActiveURLsDisplay {
+			maxShow = maxActiveURLsDisplay
 		}
 
 		for i, url := range m.stats.ActiveURLs {
@@ -323,7 +336,7 @@ func (m *Model) View() string {
 			spinnerView := m.threads[threadIdx].Spinner.View()
 
 			// Truncate URL for display
-			displayURL := truncateURL(url, 60)
+			displayURL := truncateURL(url, urlTruncateLength)
 
 			b.WriteString(fmt.Sprintf("  %s %s %s\n",
 				threadNumStyle.Render(fmt.Sprintf("[%d]", i+1)),
@@ -371,10 +384,9 @@ func (m *Model) renderFinalStats() string {
 	if len(m.errorURLs) > 0 {
 		b.WriteString(errorStyle.Render("Errors:"))
 		b.WriteString("\n")
-		maxErrors := 10
 		for i, errURL := range m.errorURLs {
-			if i >= maxErrors {
-				b.WriteString(infoStyle.Render(fmt.Sprintf("  ... and %d more errors\n", len(m.errorURLs)-maxErrors)))
+			if i >= maxErrorsDisplay {
+				b.WriteString(infoStyle.Render(fmt.Sprintf("  ... and %d more errors\n", len(m.errorURLs)-maxErrorsDisplay)))
 				break
 			}
 			b.WriteString(fmt.Sprintf("  %s %s\n", errorStyle.Render("✗"), infoStyle.Render(errURL)))
@@ -432,7 +444,6 @@ func formatBytes(bytes int64) string {
 	}
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
-
 
 func truncateURL(url string, maxLen int) string {
 	if len(url) <= maxLen {

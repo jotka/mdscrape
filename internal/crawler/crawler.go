@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -12,6 +13,14 @@ import (
 
 	"mdscrape/internal/converter"
 	"mdscrape/internal/utils"
+)
+
+// Crawler constants
+const (
+	resultChannelBuffer = 1000
+	requestTimeout      = 30 * time.Second
+	filePermissions     = 0644
+	dirPermissions      = 0755
 )
 
 // Config holds the crawler configuration
@@ -77,7 +86,7 @@ func NewCrawler(config *Config, progressCallback ProgressCallback) *Crawler {
 		config:    config,
 		converter: converter.NewConverter(config.ContentSelector),
 		stats:     stats,
-		results:   make(chan PageResult, 1000),
+		results:   make(chan PageResult, resultChannelBuffer),
 		progress:  progressCallback,
 	}
 
@@ -91,6 +100,9 @@ func (c *Crawler) setupCollector() {
 		colly.Async(true),
 		colly.UserAgent(c.config.UserAgent),
 	)
+
+	// Set request timeout to prevent hanging on unresponsive servers
+	c.collector.SetRequestTimeout(requestTimeout)
 
 	// Set up rate limiting
 	c.collector.Limit(&colly.LimitRule{
@@ -165,8 +177,16 @@ func (c *Crawler) setupCollector() {
 
 	// Handle errors
 	c.collector.OnError(func(r *colly.Response, err error) {
-		url := r.Request.URL.String()
-		c.activeURLs.Delete(url)
+		// Ignore "already visited" errors - these are expected from Colly's internal tracking
+		if err != nil && strings.Contains(err.Error(), "already visited") {
+			return
+		}
+
+		var url string
+		if r != nil && r.Request != nil && r.Request.URL != nil {
+			url = r.Request.URL.String()
+			c.activeURLs.Delete(url)
+		}
 		atomic.AddInt64(&c.stats.TotalErrors, 1)
 		if c.progress != nil {
 			c.progress(0, url, "error", 0)
@@ -225,7 +245,7 @@ func (c *Crawler) processPage(r *colly.Response) PageResult {
 	}
 
 	// Write file
-	if err := os.WriteFile(result.FilePath, []byte(markdown), 0644); err != nil {
+	if err := os.WriteFile(result.FilePath, []byte(markdown), filePermissions); err != nil {
 		result.Error = fmt.Errorf("failed to write file: %w", err)
 		return result
 	}
@@ -247,7 +267,7 @@ func (c *Crawler) processPage(r *colly.Response) PageResult {
 func (c *Crawler) Start() error {
 	// Create output directory
 	if !c.config.DryRun {
-		if err := os.MkdirAll(c.config.OutputDir, 0755); err != nil {
+		if err := os.MkdirAll(c.config.OutputDir, dirPermissions); err != nil {
 			return fmt.Errorf("failed to create output directory: %w", err)
 		}
 	}

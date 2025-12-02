@@ -215,6 +215,15 @@ mdscrape https://www.prisma.io/docs/ -o docs/prisma
 
 Then reference all three in your project instructions to create a full-stack expert agent.
 
+## Limitations
+
+- **Static HTML only** - Cannot scrape JavaScript-rendered content (SPAs, React apps). Use browser-based tools for sites that require JS execution.
+- **No authentication** - Cannot access pages behind login. For private documentation, consider exporting directly from the source.
+- **No robots.txt support** - Does not check robots.txt. Be respectful and use appropriate delays when scraping.
+- **No image downloads** - Images remain as remote URLs. Markdown files reference original image locations.
+- **No resume capability** - Interrupted scrapes must restart from the beginning. For large sites, consider scraping in sections.
+- **Rate limiting** - Some sites may block or throttle requests. Use `--delay` and reduce `--threads` if you encounter 429 errors.
+
 ## License
 
 [MIT](LICENSE)
